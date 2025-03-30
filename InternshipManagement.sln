@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.13.35806.99 d17.13
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InternshipManagement", "InternshipManagement.csproj", "{CE343BA8-6D55-4391-AEF7-007157B6E449}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CE343BA8-6D55-4391-AEF7-007157B6E449}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CE343BA8-6D55-4391-AEF7-007157B6E449}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CE343BA8-6D55-4391-AEF7-007157B6E449}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CE343BA8-6D55-4391-AEF7-007157B6E449}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B0308F6E-E891-403C-9CE3-AFB3E622BD95}
+	EndGlobalSection
+EndGlobal
