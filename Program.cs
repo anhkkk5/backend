@@ -11,6 +11,17 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllers();
 
+// Cấu hình CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", builder =>
+    {
+        builder.WithOrigins("http://localhost:3000") // Cho phép origin của frontend
+               .AllowAnyMethod() // Cho phép tất cả HTTP methods (GET, POST, PUT, DELETE, v.v.)
+               .AllowAnyHeader(); // Cho phép tất cả header (bao gồm Authorization)
+    });
+});
+
 // Cấu hình DbContext
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -47,6 +58,8 @@ builder.Services.AddSwaggerGen();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
+app.UseCors("AllowFrontend"); // Thêm CORS trước các middleware khác
+
 app.UseHttpsRedirection();
 
 // Thêm Swagger vào pipeline

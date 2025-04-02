@@ -1,4 +1,6 @@
-﻿namespace InternshipManagement.Repositories
+﻿using InternshipManagement.Models;
+
+namespace InternshipManagement.Repositories
 {
     public interface IRepository<T>
     {
@@ -7,5 +9,6 @@
         Task CreateAsync(T entity);
         Task UpdateAsync(T entity);
         Task DeleteAsync(int id);
+        Task AddAsync(Student student);
     }
 }
