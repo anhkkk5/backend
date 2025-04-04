@@ -3,13 +3,13 @@ using InternshipManagement.Models;
 using InternshipManagement.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
 namespace InternshipManagement.Controllers
 {
     [Route("api/students")]
     [ApiController]
-    [Authorize(Roles = "student")]
     public class StudentController : ControllerBase
     {
         private readonly IRepository<Student> _studentRepository;
@@ -21,7 +21,94 @@ namespace InternshipManagement.Controllers
             _context = context;
         }
 
+        // GET: api/students
+        [HttpGet]
+        [Authorize(Roles = "admin")] // Chỉ admin mới có quyền truy cập
+        public async Task<ActionResult<IEnumerable<Student>>> GetStudents()
+        {
+            try
+            {
+                var students = await _context.Students.ToListAsync();
+                return Ok(students);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Error fetching students: {ex.Message}");
+            }
+        }
+
+        // PUT: api/students/{id}
+        [HttpPut("{id}")]
+        [Authorize(Roles = "admin")] // Chỉ admin mới có quyền truy cập
+        public async Task<IActionResult> UpdateStudent(int id, [FromBody] UpdateStudentModel model)
+        {
+            try
+            {
+                // Tìm sinh viên theo ID
+                var student = await _context.Students.FindAsync(id);
+                if (student == null)
+                {
+                    return NotFound($"Student with ID {id} not found");
+                }
+
+                // Cập nhật các trường
+                if (!string.IsNullOrEmpty(model.Phone))
+                {
+                    student.Phone = model.Phone;
+                }
+                if (!string.IsNullOrEmpty(model.Address))
+                {
+                    student.Address = model.Address;
+                }
+                if (!string.IsNullOrEmpty(model.Skills))
+                {
+                    student.Skills = model.Skills;
+                }
+                if (!string.IsNullOrEmpty(model.CvUrl))
+                {
+                    student.CvUrl = model.CvUrl;
+                }
+
+                // Lưu thay đổi vào database
+                _context.Students.Update(student);
+                await _context.SaveChangesAsync();
+
+                return Ok(new { Message = $"Student with ID {id} updated successfully" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Error updating student: {ex.Message}");
+            }
+        }
+
+        // DELETE: api/students/{id}
+        [HttpDelete("{id}")]
+        [Authorize(Roles = "admin")] // Chỉ admin mới có quyền truy cập
+        public async Task<IActionResult> DeleteStudent(int id)
+        {
+            try
+            {
+                // Tìm sinh viên theo ID
+                var student = await _context.Students.FindAsync(id);
+                if (student == null)
+                {
+                    return NotFound($"Student with ID {id} not found");
+                }
+
+                // Xóa sinh viên
+                _context.Students.Remove(student);
+                await _context.SaveChangesAsync();
+
+                return Ok(new { Message = $"Student with ID {id} deleted successfully" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Error deleting student: {ex.Message}");
+            }
+        }
+
         [HttpGet("profile")]
+        [Authorize(Roles = "student")] // Chỉ student mới có quyền truy cập
         public async Task<IActionResult> GetProfile()
         {
             var accountIdValue = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -49,6 +136,7 @@ namespace InternshipManagement.Controllers
         }
 
         [HttpPut("profile")]
+        [Authorize(Roles = "student")] // Chỉ student mới có quyền truy cập
         public async Task<IActionResult> UpdateProfile([FromBody] Student profile)
         {
             // Kiểm tra AccountId từ token
@@ -102,5 +190,13 @@ namespace InternshipManagement.Controllers
 
             return Ok(new { Message = "Profile updated successfully" });
         }
+    }
+
+    public class UpdateStudentModel
+    {
+        public string Phone { get; set; }
+        public string Address { get; set; }
+        public string Skills { get; set; }
+        public string CvUrl { get; set; }
     }
 }

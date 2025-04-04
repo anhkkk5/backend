@@ -3,13 +3,16 @@ using InternshipManagement.Models;
 using InternshipManagement.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
 namespace InternshipManagement.Controllers
 {
     [Route("api/companies")]
     [ApiController]
-    [Authorize(Roles = "company")]
+
+
+    
     public class CompanyController : ControllerBase
     {
         private readonly IRepository<Company> _companyRepository;
@@ -21,6 +24,92 @@ namespace InternshipManagement.Controllers
             _context = context;
         }
 
+        [HttpGet]
+        [Authorize(Roles = "admin")] // Chỉ admin mới có quyền truy cập
+        public async Task<ActionResult<IEnumerable<Company>>> GetCompanies()
+        {
+            try
+            {
+                var companies = await _context.Companies.ToListAsync();
+                return Ok(companies);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Error fetching companies: {ex.Message}");
+            }
+        }
+
+        // PUT: api/companies/{id}
+        [HttpPut("{id}")]
+        [Authorize(Roles = "admin")] // Chỉ admin mới có quyền truy cập
+        public async Task<IActionResult> UpdateCompany(int id, [FromBody] UpdateCompanyModel model)
+        {
+            try
+            {
+                // Tìm công ty theo ID
+                var company = await _context.Companies.FindAsync(id);
+                if (company == null)
+                {
+                    return NotFound($"Company with ID {id} not found");
+                }
+
+                // Cập nhật các trường
+                if (!string.IsNullOrEmpty(model.Name))
+                {
+                    company.Name = model.Name;
+                }
+                if (!string.IsNullOrEmpty(model.Address))
+                {
+                    company.Address = model.Address;
+                }
+                if (!string.IsNullOrEmpty(model.Contact))
+                {
+                    company.Contact = model.Contact;
+                }
+                if (!string.IsNullOrEmpty(model.Description))
+                {
+                    company.Description = model.Description;
+                }
+
+                // Lưu thay đổi vào database
+                _context.Companies.Update(company);
+                await _context.SaveChangesAsync();
+
+                return Ok(new { Message = $"Company with ID {id} updated successfully" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Error updating company: {ex.Message}");
+            }
+        }
+
+        // DELETE: api/companies/{id}
+        [HttpDelete("{id}")]
+        [Authorize(Roles = "admin")] // Chỉ admin mới có quyền truy cập
+        public async Task<IActionResult> DeleteCompany(int id)
+        {
+            try
+            {
+                // Tìm công ty theo ID
+                var company = await _context.Companies.FindAsync(id);
+                if (company == null)
+                {
+                    return NotFound($"Company with ID {id} not found");
+                }
+
+                // Xóa công ty
+                _context.Companies.Remove(company);
+                await _context.SaveChangesAsync();
+
+                return Ok(new { Message = $"Company with ID {id} deleted successfully" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Error deleting company: {ex.Message}");
+            }
+        }
+
+        [Authorize(Roles = "company")]
         [HttpGet("profile")]
         public async Task<IActionResult> GetProfile()
         {
@@ -102,5 +191,12 @@ namespace InternshipManagement.Controllers
 
             return Ok(new { Message = "Company profile updated successfully" });
         }
+    }
+    public class UpdateCompanyModel
+    {
+        public string Name { get; set; }
+        public string Address { get; set; }
+        public string Contact { get; set; }
+        public string Description { get; set; }
     }
 }
